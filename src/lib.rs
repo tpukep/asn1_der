@@ -48,38 +48,39 @@
 //! # }
 //! ```
 
-
 #[cfg(feature = "derive")]
-#[allow(unused_imports)] #[macro_use] extern crate asn1_der_derive;
+#[allow(unused_imports)]
+#[macro_use]
+extern crate asn1_der_derive;
 
 /// Contains a generic ASN.1-DER-object-implementation
 mod der;
 /// Implements some DER types and their conversion from/to native types
 mod types;
 
-pub use ::{
-	der::{ DerObject, DerTag, DerLength, DerValue },
-	types::{ FromDerObject, IntoDerObject, U128Ext }
-};
 #[cfg(feature = "derive")]
-#[doc(hidden)] pub use asn1_der_derive::*;
-
+#[doc(hidden)]
+pub use asn1_der_derive::*;
+pub use {
+    der::{DerLength, DerObject, DerTag, DerValue},
+    types::{FromDerObject, IntoDerObject, ObjectIdentifier, U128Ext},
+};
 
 /// An `asn1_der`-related error
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Asn1DerError {
-	/// Not enough or too much bytes/objects/space left
-	LengthMismatch,
-	/// The serialized tag does not match the type
-	InvalidTag,
-	/// The encoding does not conform to the DER standard
-	InvalidEncoding,
-	/// The element is not supported by this implementation
-	Unsupported
+    /// Not enough or too much bytes/objects/space left
+    LengthMismatch,
+    /// The serialized tag does not match the type
+    InvalidTag,
+    /// The encoding does not conform to the DER standard
+    InvalidEncoding,
+    /// The element is not supported by this implementation
+    Unsupported,
 }
 impl ::std::fmt::Display for Asn1DerError {
-	fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
-		write!(f, "{:#?}", self)
-	}
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        write!(f, "{:#?}", self)
+    }
 }
 impl ::std::error::Error for Asn1DerError {}

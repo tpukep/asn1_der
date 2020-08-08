@@ -1,7 +1,7 @@
 extern crate asn1_der;
-use ::{
-	std::{ collections::HashMap, u8 },
-	asn1_der::{ Asn1DerError, DerTag }
+use {
+    asn1_der::{Asn1DerError, DerTag},
+    std::{collections::HashMap, u8},
 };
 
 macro_rules! tags {
@@ -15,11 +15,12 @@ macro_rules! tags {
 		0x02 => DerTag::Integer,
 		0x04 => DerTag::OctetString,
 		0x05 => DerTag::Null,
+		0x06 => DerTag::ObjectIdentifier,
 		0x0c => DerTag::Utf8String,
 		0x30 => DerTag::Sequence,
 
 		0x00 => DerTag::x00, /* Boolean        */ /* Integer        */ 0x03 => DerTag::x03,
-		/* OctetString    */ /* Null           */ 0x06 => DerTag::x06, 0x07 => DerTag::x07,
+		/* OctetString    */ /* Null           */ /* ObjectID       */ 0x07 => DerTag::x07,
 		0x08 => DerTag::x08, 0x09 => DerTag::x09, 0x0a => DerTag::x0a, 0x0b => DerTag::x0b,
 		/* Utf8String     */ 0x0d => DerTag::x0d, 0x0e => DerTag::x0e, 0x0f => DerTag::x0f,
 		0x10 => DerTag::x10, 0x11 => DerTag::x11, 0x12 => DerTag::x12, 0x13 => DerTag::x13,
@@ -85,44 +86,42 @@ macro_rules! tags {
 	))
 }
 
-
 #[test]
 fn test_ok() {
-	let map: HashMap<u8, DerTag> = tags!();
-	
-	// Assert that we really have 256 keys so that we have a 1:1 relationship between `Tag` and `u8`
-	assert_eq!(map.len(), (u8::MIN..=u8::MAX).count());
-	
-	// Match each possible key-value combination
-	for (value, tag) in map.iter() {
-		assert_eq!(DerTag::from(*value), *tag);
-		assert_eq!(*value, u8::from(*tag));
-	}
-	
-	// Test coding
-	let mut buf_slice = [0u8];
-	for (value, tag) in map.iter() {
-		buf_slice[0] = *value;
-		
-		// Test deserialization
-		let deserialized = DerTag::deserialize(buf_slice.iter()).unwrap();
-		assert_eq!(deserialized, *tag);
-		
-		// Test length prediction
-		assert_eq!(tag.serialized_len(), 1);
-		
-		// Test serialization
-		deserialized.serialize(buf_slice.iter_mut()).unwrap();
-		assert_eq!(*value, buf_slice[0]);
-	}
-}
+    let map: HashMap<u8, DerTag> = tags!();
 
+    // Assert that we really have 256 keys so that we have a 1:1 relationship between `Tag` and `u8`
+    assert_eq!(map.len(), (u8::MIN..=u8::MAX).count());
+
+    // Match each possible key-value combination
+    for (value, tag) in map.iter() {
+        assert_eq!(DerTag::from(*value), *tag);
+        assert_eq!(*value, u8::from(*tag));
+    }
+
+    // Test coding
+    let mut buf_slice = [0u8];
+    for (value, tag) in map.iter() {
+        buf_slice[0] = *value;
+
+        // Test deserialization
+        let deserialized = DerTag::deserialize(buf_slice.iter()).unwrap();
+        assert_eq!(deserialized, *tag);
+
+        // Test length prediction
+        assert_eq!(tag.serialized_len(), 1);
+
+        // Test serialization
+        deserialized.serialize(buf_slice.iter_mut()).unwrap();
+        assert_eq!(*value, buf_slice[0]);
+    }
+}
 
 #[test]
 fn test_err() {
-	let empty_slice: [u8; 0] = [];
-	assert_eq!(
-		DerTag::deserialize(empty_slice.iter()).unwrap_err(),
-		Asn1DerError::LengthMismatch
-	)
+    let empty_slice: [u8; 0] = [];
+    assert_eq!(
+        DerTag::deserialize(empty_slice.iter()).unwrap_err(),
+        Asn1DerError::LengthMismatch
+    )
 }
